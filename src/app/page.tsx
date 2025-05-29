@@ -17,30 +17,38 @@ export default function Home() {
 
     setMessage('開始中…');
 
-    const resp = await fetch('/api/webauthn/generate-registration-options', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username }),
-    });
-
-    const options = await resp.json();
-
     try {
+      console.log('Requesting registration options for username:', username);
+      const resp = await fetch('/api/webauthn/generate-registration-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+
+      const options = await resp.json();
+      console.log('Received registration options:', options);
+
       const attResp = await startRegistration(options);
+      console.log('Registration response from authenticator:', attResp);
 
       const verifyResp = await fetch('/api/webauthn/verify-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(attResp),
+        body: JSON.stringify({
+          ...attResp,
+          userName: username,
+        }),
       });
 
       if (verifyResp.ok) {
         setMessage('登録成功！');
       } else {
         const error = await verifyResp.json();
+        console.error('Registration verification failed:', error);
         setMessage(`登録失敗: ${error.error}`);
       }
     } catch (err) {
+      console.error('Registration error:', err);
       setMessage(`エラー: ${String(err)}`);
     }
   };
