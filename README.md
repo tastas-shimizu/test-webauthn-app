@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WebAuthn デモアプリケーション
 
-## Getting Started
+このアプリケーションは、WebAuthnを使用したパスワードレス認証のデモ実装です。Next.js、Prisma、SQLiteを使用して構築されています。
 
-First, run the development server:
+## 機能
 
+- WebAuthnを使用したパスワードレス認証
+- ユーザー登録と認証
+- セキュアな認証情報の保存
+
+## 必要条件
+
+- Node.js 18以上
+- npm 9以上
+
+## セットアップ
+
+1. リポジトリをクローン：
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd test-webauthn-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. 依存関係のインストール：
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. データベースのセットアップ：
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. 開発サーバーの起動：
+```bash
+npm run dev
+```
 
-## Learn More
+アプリケーションは https://localhost:3001 で利用可能になります。
 
-To learn more about Next.js, take a look at the following resources:
+## 技術スタック
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **フロントエンド**: Next.js 15.3.2
+- **データベース**: SQLite (Prisma ORM)
+- **認証**: WebAuthn (@simplewebauthn/server)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## プロジェクト構造
 
-## Deploy on Vercel
+```
+.
+├── prisma/              # Prismaスキーマとマイグレーション
+├── src/
+│   ├── app/            # Next.jsアプリケーションコード
+│   │   ├── api/        # APIルート
+│   │   └── page.tsx    # メインページ
+│   └── lib/            # ユーティリティ関数
+└── public/             # 静的ファイル
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## データベース
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+このアプリケーションはSQLiteデータベースを使用し、Prisma ORMで管理されています。主なテーブルは以下の通りです：
+
+- `challenges`: WebAuthn登録時のチャレンジを保存
+- `authenticators`: ユーザーの認証情報を保存
+
+## 開発
+
+### データベースの変更
+
+データベーススキーマを変更する場合は、以下の手順に従ってください：
+
+1. `prisma/schema.prisma`を編集
+2. マイグレーションを生成：
+```bash
+npx prisma migrate dev --name <migration-name>
+```
+
+### 環境変数
+
+現在、特別な環境変数は必要ありません。データベースは`prisma/dev.db`に保存されます。
+
+## 注意事項
+
+- このアプリケーションはデモ用であり、本番環境での使用は推奨されません
+- セキュリティ設定は最小限に抑えられています
+- データベースはローカルに保存され、バックアップは行われません
+
+## ライセンス
+
+MIT
