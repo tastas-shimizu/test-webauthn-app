@@ -1,10 +1,7 @@
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { initDatabase, saveChallenge } from '@/lib/db';
-
-// データベースの初期化
-initDatabase();
+import { saveChallenge } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
     const { username } = await req.json();
@@ -37,7 +34,7 @@ export async function POST(req: NextRequest) {
     console.log('Generated challenge:', options.challenge);
 
     // チャレンジをデータベースに保存
-    saveChallenge(username, options.challenge);
+    await saveChallenge(username, options.challenge);
 
     return NextResponse.json(options);
 }

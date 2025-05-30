@@ -1,12 +1,9 @@
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { initDatabase, getChallenge, deleteChallenge, saveAuthenticator } from '@/lib/db';
+import { getChallenge, deleteChallenge, saveAuthenticator } from '@/lib/db';
 
 const rpID = 'localhost';
-
-// データベースの初期化
-initDatabase();
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
@@ -17,7 +14,7 @@ export async function POST(req: NextRequest) {
         const username = body.userName;
         console.log('Verifying registration for username:', username);
 
-        const expectedChallenge = getChallenge(username);
+        const expectedChallenge = await getChallenge(username);
         console.log('Expected challenge:', expectedChallenge);
 
         if (!expectedChallenge) {
@@ -42,7 +39,7 @@ export async function POST(req: NextRequest) {
         if (verification.verified && verification.registrationInfo) {
             console.log('Registration verified successfully');
             // 認証情報を保存
-            saveAuthenticator(
+            await saveAuthenticator(
                 username,
                 Buffer.from(verification.registrationInfo.credential.id).toString('base64'),
                 Buffer.from(verification.registrationInfo.credential.publicKey).toString('base64'),
@@ -50,7 +47,7 @@ export async function POST(req: NextRequest) {
             );
 
             // チャレンジを削除
-            deleteChallenge(username);
+            await deleteChallenge(username);
 
             return NextResponse.json({ verified: true });
         } else {
