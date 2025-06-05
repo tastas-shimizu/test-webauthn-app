@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         rpID,
         allowCredentials: [{
             id: authenticator.credentialId,
-            transports: authenticator.transports,
+            // transports: authenticator.transports, // Windows Hello だとコメントアウトしないと動かない
         }],
         userVerification: 'preferred',
         timeout: 60000,

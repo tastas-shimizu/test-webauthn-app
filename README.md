@@ -32,7 +32,19 @@ npx prisma generate
 npx prisma migrate dev
 ```
 
-4. 開発サーバーの起動：
+4. SSL証明書作成：
+    #### macOS
+    ```bash
+    brew install mkcert
+    mkcert -install
+    mkcert localhost
+    ```
+   #### WSL
+    ```bash
+    openssl req -x509 -newkey rsa:2048 -nodes -keyout localhost-key.pem -out localhost.pem -days 365 -subj "/CN=localhost"
+    ```
+
+5. 開発サーバーの起動：
 ```bash
 npm run dev
 ```
