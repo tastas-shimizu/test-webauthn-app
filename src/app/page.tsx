@@ -230,32 +230,22 @@ export default function Home() {
   return (
     <main className="p-8">
       <h1 className="text-2xl mb-4">WebAuthn デモ</h1>
-      <div className="flex gap-2 mb-4">
-        <input
-          className="border px-2 py-1 flex-grow"
-          placeholder="ユーザー名"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+      <input
+        className="border px-2 py-1"
+        placeholder="ユーザー名"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <div className="flex gap-2 my-4">
         <button
-          className={`px-4 py-2 rounded ${
-            username.trim() && !isLoading
-              ? 'bg-blue-600 text-white' 
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          className="px-4 py-2 rounded bg-blue-600 text-white"
           onClick={handleRegister}
-          disabled={!username.trim() || isLoading}
         >
           登録
         </button>
         <button
-          className={`px-4 py-2 rounded ${
-            username.trim() && !isLoading
-              ? 'bg-green-600 text-white' 
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          className="px-4 py-2 rounded bg-green-600 text-white"
           onClick={handleAuthenticate}
-          disabled={!username.trim() || isLoading}
         >
           認証
         </button>
