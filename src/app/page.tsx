@@ -50,7 +50,7 @@ export default function Home() {
   // 認証器の削除
   const handleDeleteAuthenticator = async (credentialId: string) => {
     try {
-      const resp = await fetch('/api/webauthn/delete-authenticator', {
+      const resp = await fetch('/api/webauthn/authenticators/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credentialId }),
@@ -83,7 +83,7 @@ export default function Home() {
       const deviceType = getDeviceType();
       const deviceName = getDeviceName();
 
-      const resp = await fetch('/api/webauthn/generate-registration-options', {
+      const resp = await fetch('/api/webauthn/registration/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, deviceType, deviceName }),
@@ -96,7 +96,7 @@ export default function Home() {
       const data = await resp.json();
       const attResp = await startRegistration(data);
 
-      const verificationResp = await fetch('/api/webauthn/verify-registration', {
+      const verificationResp = await fetch('/api/webauthn/registration/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,7 +150,7 @@ export default function Home() {
 
     try {
       // 認証オプションを取得
-      const resp = await fetch('/api/webauthn/generate-authentication-options', {
+      const resp = await fetch('/api/webauthn/authentication/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
@@ -164,7 +164,7 @@ export default function Home() {
       console.log('Authentication response:', authResp);
 
       // 認証を検証
-      const verifyResp = await fetch('/api/webauthn/verify-authentication', {
+      const verifyResp = await fetch('/api/webauthn/authentication/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
