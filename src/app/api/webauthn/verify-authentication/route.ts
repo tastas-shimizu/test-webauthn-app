@@ -1,7 +1,7 @@
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getChallenge, deleteChallenge, getAuthenticator } from '@/lib/db';
+import { getChallenge, deleteChallenge, getAuthenticator, updateAuthenticatorLastUsed } from '@/lib/db';
 
 const rpID = 'localhost';
 
@@ -54,6 +54,8 @@ export async function POST(req: NextRequest) {
             console.log('Authentication verified successfully');
             // チャレンジを削除
             await deleteChallenge(username);
+            // 最終使用日時を更新
+            await updateAuthenticatorLastUsed(authenticator.credentialId);
 
             return NextResponse.json({ verified: true });
         } else {

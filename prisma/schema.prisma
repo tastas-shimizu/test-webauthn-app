@@ -23,13 +23,16 @@ model Challenge {
 }
 
 model Authenticator {
-  id           Int      @id @default(autoincrement())
-  username     String
-  credentialId String   @map("credential_id")
-  publicKey    String   @map("public_key")
-  counter      Int
-  transports   String   @map("transports")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id          Int      @id @default(autoincrement())
+  username    String
+  credentialId String  @unique
+  publicKey   String
+  counter     Int
+  transports  String
+  deviceType  String   // デバイスの種類（スマートフォン、PC、セキュリティキーなど）
+  deviceName  String   // デバイスの名前（iPhone 15、MacBook Pro、YubiKey 5Cなど）
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime @default(now())
 
   @@map("authenticators")
 }

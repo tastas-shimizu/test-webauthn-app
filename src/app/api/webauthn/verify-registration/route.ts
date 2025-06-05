@@ -44,7 +44,9 @@ export async function POST(req: NextRequest) {
                 verification.registrationInfo.credential.id,
                 verification.registrationInfo.credential.publicKey,
                 verification.registrationInfo.credential.counter,
-                (verification.registrationInfo.credential.transports || ['usb', 'ble', 'nfc', 'internal']) as AuthenticatorTransport[]
+                (verification.registrationInfo.credential.transports || ['usb', 'ble', 'nfc', 'internal']) as AuthenticatorTransport[],
+                body.deviceType || 'unknown',
+                body.deviceName || 'unknown'
             );
 
             // チャレンジを削除

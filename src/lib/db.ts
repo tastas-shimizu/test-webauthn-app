@@ -51,7 +51,15 @@ export async function deleteChallenge(username: string) {
 }
 
 // 認証情報の保存
-export async function saveAuthenticator(username: string, credentialId: string, publicKey: Uint8Array, counter: number, transports: AuthenticatorTransport[]) {
+export async function saveAuthenticator(
+    username: string,
+    credentialId: string,
+    publicKey: Uint8Array,
+    counter: number,
+    transports: AuthenticatorTransport[],
+    deviceType: string,
+    deviceName: string
+) {
     try {
         await prisma.authenticator.create({
             data: {
@@ -60,6 +68,8 @@ export async function saveAuthenticator(username: string, credentialId: string, 
                 publicKey: Buffer.from(publicKey).toString('base64'),
                 counter,
                 transports: JSON.stringify(transports),
+                deviceType,
+                deviceName,
             },
         });
     } catch (error) {
@@ -73,7 +83,7 @@ export async function getAuthenticator(username: string) {
     try {
         const authenticator = await prisma.authenticator.findFirst({
             where: { username },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { lastUsedAt: 'desc' },
         });
         console.log('Retrieved authenticator:', authenticator);
         if (authenticator) {
@@ -87,6 +97,48 @@ export async function getAuthenticator(username: string) {
         return authenticator;
     } catch (error) {
         console.error('Error getting authenticator:', error);
+        throw error;
+    }
+}
+
+// ユーザーの全認証器を取得
+export async function getUserAuthenticators(username: string) {
+    try {
+        const authenticators = await prisma.authenticator.findMany({
+            where: { username },
+            orderBy: { lastUsedAt: 'desc' },
+        });
+        return authenticators.map(auth => ({
+            ...auth,
+            transports: JSON.parse(auth.transports) as AuthenticatorTransport[],
+        }));
+    } catch (error) {
+        console.error('Error getting user authenticators:', error);
+        throw error;
+    }
+}
+
+// 認証器の最終使用日時を更新
+export async function updateAuthenticatorLastUsed(credentialId: string) {
+    try {
+        await prisma.authenticator.update({
+            where: { credentialId },
+            data: { lastUsedAt: new Date() },
+        });
+    } catch (error) {
+        console.error('Error updating authenticator last used:', error);
+        throw error;
+    }
+}
+
+// 認証器の削除
+export async function deleteAuthenticator(credentialId: string) {
+    try {
+        await prisma.authenticator.delete({
+            where: { credentialId },
+        });
+    } catch (error) {
+        console.error('Error deleting authenticator:', error);
         throw error;
     }
 } 

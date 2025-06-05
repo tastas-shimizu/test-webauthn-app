@@ -1,57 +1,142 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   startRegistration,
   startAuthentication,
 } from '@simplewebauthn/browser';
 
+type Authenticator = {
+  id: number;
+  credentialId: string;
+  name: string;
+  createdAt: string;
+  lastUsedAt: string;
+  deviceType: string;
+  deviceName: string;
+  transports: string[];
+};
+
 export default function Home() {
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
+  const [authenticators, setAuthenticators] = useState<Authenticator[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // 認証器の一覧を取得
+  const fetchAuthenticators = async (username: string) => {
+    if (!username.trim()) return;
+    
+    try {
+      const resp = await fetch(`/api/webauthn/authenticators?username=${encodeURIComponent(username)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setAuthenticators(data.authenticators);
+      }
+    } catch (err) {
+      console.error('Error fetching authenticators:', err);
+    }
+  };
+
+  // ユーザー名が変更されたときに認証器の一覧を取得
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchAuthenticators(username);
+    }, 500); // 入力が完了してから500ms後に取得
+
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  // 認証器の削除
+  const handleDeleteAuthenticator = async (credentialId: string) => {
+    try {
+      const resp = await fetch('/api/webauthn/delete-authenticator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credentialId }),
+      });
+      if (resp.ok) {
+        setMessage('認証器を削除しました');
+        fetchAuthenticators(username);
+      } else {
+        const error = await resp.json();
+        setMessage(`認証器の削除に失敗しました: ${error.error}`);
+      }
+    } catch (err) {
+      console.error('Error deleting authenticator:', err);
+      setMessage(`エラー: ${String(err)}`);
+    }
+  };
+
+  // 認証器の登録
   const handleRegister = async () => {
     if (!username.trim()) {
       setMessage('ユーザー名を入力してください');
       return;
     }
 
-    setMessage('登録中…');
+    setIsLoading(true);
+    setMessage('');
 
     try {
-      console.log('Requesting registration options for username:', username);
+      // デバイス情報の取得
+      const deviceType = getDeviceType();
+      const deviceName = getDeviceName();
+
       const resp = await fetch('/api/webauthn/generate-registration-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, deviceType, deviceName }),
       });
 
-      const options = await resp.json();
-      console.log('Received registration options:', options);
+      if (!resp.ok) {
+        throw new Error('登録に失敗しました');
+      }
 
-      const attResp = await startRegistration(options);
-      console.log('Registration response from authenticator:', attResp);
+      const data = await resp.json();
+      const attResp = await startRegistration(data);
 
-      const verifyResp = await fetch('/api/webauthn/verify-registration', {
+      const verificationResp = await fetch('/api/webauthn/verify-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...attResp,
           userName: username,
+          ...attResp,
+          deviceType,
+          deviceName,
         }),
       });
 
-      if (verifyResp.ok) {
-        setMessage('登録成功！');
-      } else {
-        const error = await verifyResp.json();
-        console.error('Registration verification failed:', error);
-        setMessage(`登録失敗: ${error.error}`);
+      if (!verificationResp.ok) {
+        throw new Error('認証器の検証に失敗しました');
       }
+
+      setMessage('認証器の登録が完了しました');
+      fetchAuthenticators(username);
     } catch (err) {
       console.error('Registration error:', err);
       setMessage(`エラー: ${String(err)}`);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // デバイスの種類を取得
+  const getDeviceType = () => {
+    const ua = navigator.userAgent;
+    if (/(iPhone|iPad|iPod)/.test(ua)) return 'iOS';
+    if (/Android/.test(ua)) return 'Android';
+    if (/Windows/.test(ua)) return 'Windows';
+    if (/Mac/.test(ua)) return 'Mac';
+    if (/Linux/.test(ua)) return 'Linux';
+    return 'Unknown';
+  };
+
+  // デバイスの名前を取得
+  const getDeviceName = () => {
+    const ua = navigator.userAgent;
+    const deviceInfo = ua.match(/\((.*?)\)/);
+    return deviceInfo ? deviceInfo[1] : 'Unknown Device';
   };
 
   const handleAuthenticate = async () => {
@@ -60,6 +145,7 @@ export default function Home() {
       return;
     }
 
+    setIsLoading(true);
     setMessage('認証中...');
 
     try {
@@ -89,6 +175,7 @@ export default function Home() {
 
       if (verifyResp.ok) {
         setMessage('認証成功！');
+        fetchAuthenticators(username);
       } else {
         const error = await verifyResp.json();
         console.error('Authentication verification failed:', error);
@@ -97,7 +184,47 @@ export default function Home() {
     } catch (err) {
       console.error('Authentication error:', err);
       setMessage(`エラー: ${String(err)}`);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // 認証器の一覧を表示
+  const renderAuthenticators = () => {
+    if (authenticators.length === 0) {
+        return <p className="text-gray-500">登録済みの認証器はありません</p>;
+    }
+
+    return (
+        <div className="space-y-2">
+            {authenticators.map((auth) => (
+                <div
+                    key={auth.credentialId}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg shadow"
+                >
+                    <div>
+                        <p className="font-medium">{auth.deviceName}</p>
+                        <p className="text-sm text-gray-500">{auth.deviceType}</p>
+                        <p className="text-sm text-gray-500">
+                            認証器の種類: {auth.transports.includes('internal') ? 'プラットフォーム認証器' : 'ローミング認証器'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                            登録日: {new Date(auth.createdAt).toLocaleString()}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                            最終使用: {new Date(auth.lastUsedAt).toLocaleString()}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => handleDeleteAuthenticator(auth.credentialId)}
+                        className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+                    >
+                        削除
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
   };
 
   return (
@@ -112,28 +239,30 @@ export default function Home() {
         />
         <button
           className={`px-4 py-2 rounded ${
-            username.trim() 
+            username.trim() && !isLoading
               ? 'bg-blue-600 text-white' 
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
           onClick={handleRegister}
-          disabled={!username.trim()}
+          disabled={!username.trim() || isLoading}
         >
           登録
         </button>
         <button
           className={`px-4 py-2 rounded ${
-            username.trim() 
+            username.trim() && !isLoading
               ? 'bg-green-600 text-white' 
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
           onClick={handleAuthenticate}
-          disabled={!username.trim()}
+          disabled={!username.trim() || isLoading}
         >
           認証
         </button>
       </div>
       <p className="mt-4">{message}</p>
+
+      {renderAuthenticators()}
     </main>
   );
 }
