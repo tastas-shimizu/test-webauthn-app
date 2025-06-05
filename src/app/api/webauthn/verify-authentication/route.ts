@@ -1,7 +1,7 @@
-import { verifyRegistrationResponse, AuthenticatorTransport } from '@simplewebauthn/server';
+import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getChallenge, deleteChallenge, saveAuthenticator } from '@/lib/db';
+import { getChallenge, deleteChallenge, getAuthenticator } from '@/lib/db';
 
 const rpID = 'localhost';
 
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     try {
         // ユーザー名を取得
         const username = body.userName;
-        console.log('Verifying registration for username:', username);
+        console.log('Verifying authentication for username:', username);
 
         const expectedChallenge = await getChallenge(username);
         console.log('Expected challenge:', expectedChallenge);
@@ -25,38 +25,43 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // 認証機の情報を取得
+        const authenticator = await getAuthenticator(username);
+        if (!authenticator) {
+            return NextResponse.json(
+                { error: '認証機の情報が見つかりません' },
+                { status: 400 }
+            );
+        }
+
         console.log('Verifying with challenge:', expectedChallenge);
-        const verification = await verifyRegistrationResponse({
+        const verification = await verifyAuthenticationResponse({
             response: body,
             expectedChallenge,
             expectedOrigin: 'https://localhost:3001',
             expectedRPID: rpID,
+            credential: {
+                id: authenticator.credentialId,
+                publicKey: authenticator.publicKey,
+                counter: authenticator.counter,
+            },
             requireUserVerification: false,
         });
 
         console.log('Verification result:', verification);
 
-        if (verification.verified && verification.registrationInfo) {
-            console.log('Registration verified successfully', verification);
-            // 認証情報を保存
-            await saveAuthenticator(
-                username,
-                verification.registrationInfo.credential.id,
-                verification.registrationInfo.credential.publicKey,
-                verification.registrationInfo.credential.counter,
-                (verification.registrationInfo.credential.transports || ['usb', 'ble', 'nfc', 'internal']) as AuthenticatorTransport[]
-            );
-
+        if (verification.verified) {
+            console.log('Authentication verified successfully');
             // チャレンジを削除
             await deleteChallenge(username);
 
             return NextResponse.json({ verified: true });
         } else {
-            console.log('Registration verification failed');
+            console.log('Authentication verification failed');
             return NextResponse.json({ verified: false }, { status: 400 });
         }
     } catch (err) {
         console.error('Verification error:', err);
         return NextResponse.json({ error: String(err) }, { status: 500 });
     }
-}
+} 

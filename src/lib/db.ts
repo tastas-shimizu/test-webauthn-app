@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { AuthenticatorTransport } from '@simplewebauthn/server';
 
 const prisma = new PrismaClient();
 
@@ -50,14 +51,15 @@ export async function deleteChallenge(username: string) {
 }
 
 // 認証情報の保存
-export async function saveAuthenticator(username: string, credentialId: string, publicKey: string, counter: number) {
+export async function saveAuthenticator(username: string, credentialId: string, publicKey: Uint8Array, counter: number, transports: AuthenticatorTransport[]) {
     try {
         await prisma.authenticator.create({
             data: {
                 username,
                 credentialId,
-                publicKey,
+                publicKey: Buffer.from(publicKey).toString('base64'),
                 counter,
+                transports: JSON.stringify(transports),
             },
         });
     } catch (error) {
@@ -69,10 +71,20 @@ export async function saveAuthenticator(username: string, credentialId: string, 
 // 認証情報の取得
 export async function getAuthenticator(username: string) {
     try {
-        return await prisma.authenticator.findFirst({
+        const authenticator = await prisma.authenticator.findFirst({
             where: { username },
             orderBy: { createdAt: 'desc' },
         });
+        console.log('Retrieved authenticator:', authenticator);
+        if (authenticator) {
+            return {
+                ...authenticator,
+                credentialId: authenticator.credentialId,
+                publicKey: new Uint8Array(Buffer.from(authenticator.publicKey, 'base64')),
+                transports: JSON.parse(authenticator.transports) as AuthenticatorTransport[],
+            };
+        }
+        return authenticator;
     } catch (error) {
         console.error('Error getting authenticator:', error);
         throw error;

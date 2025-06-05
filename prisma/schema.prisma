@@ -28,6 +28,7 @@ model Authenticator {
   credentialId String   @map("credential_id")
   publicKey    String   @map("public_key")
   counter      Int
+  transports   String   @map("transports")
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("authenticators")
