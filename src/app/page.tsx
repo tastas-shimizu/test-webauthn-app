@@ -21,7 +21,6 @@ export default function Home() {
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [authenticators, setAuthenticators] = useState<Authenticator[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   // 認証器の一覧を取得
   const fetchAuthenticators = async (username: string) => {
@@ -75,7 +74,6 @@ export default function Home() {
       return;
     }
 
-    setIsLoading(true);
     setMessage('');
 
     try {
@@ -116,8 +114,6 @@ export default function Home() {
     } catch (err) {
       console.error('Registration error:', err);
       setMessage(`エラー: ${String(err)}`);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -145,7 +141,6 @@ export default function Home() {
       return;
     }
 
-    setIsLoading(true);
     setMessage('認証中...');
 
     try {
@@ -184,8 +179,6 @@ export default function Home() {
     } catch (err) {
       console.error('Authentication error:', err);
       setMessage(`エラー: ${String(err)}`);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -228,15 +221,15 @@ export default function Home() {
   };
 
   return (
-    <main className="p-8">
+    <main className="p-8 max-w-2xl mx-auto">
       <h1 className="text-2xl mb-4">WebAuthn デモ</h1>
       <input
-        className="border px-2 py-1"
+        className="border w-full px-2 py-1"
         placeholder="ユーザー名"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
-      <div className="flex gap-2 my-4">
+      <div className="flex justify-center gap-2 my-4">
         <button
           className="px-4 py-2 rounded bg-blue-600 text-white"
           onClick={handleRegister}
