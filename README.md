@@ -77,6 +77,32 @@ npm run dev
 - `challenges`: WebAuthn登録時のチャレンジを保存
 - `authenticators`: ユーザーの認証情報を保存
 
+### データベースの閲覧方法
+
+#### SQLiteコマンドラインツールを使用する場合
+
+1. テーブル一覧の確認：
+```bash
+sqlite3 prisma/dev.db ".tables"
+```
+
+2. テーブルの内容確認（見やすい形式）：
+```bash
+sqlite3 prisma/dev.db ".mode column" ".headers on" "SELECT id, username, credentialId, deviceType, deviceName, datetime(createdAt/1000, 'unixepoch') as createdAt, datetime(lastUsedAt/1000, 'unixepoch') as lastUsedAt FROM authenticators;"
+```
+
+3. スキーマの確認：
+```bash
+sqlite3 prisma/dev.db ".schema テーブル名"
+```
+
+#### Prisma Studioを使用する場合
+
+以下のコマンドでブラウザベースのGUIツールを起動できます：
+```bash
+npx prisma studio
+```
+
 ## 開発
 
 ### データベースの変更
