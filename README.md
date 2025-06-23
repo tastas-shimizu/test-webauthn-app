@@ -114,6 +114,7 @@ Vercelにデプロイする際は、**以下の環境変数をVercelの管理画
 2. 「Settings」→「Environment Variables」を選択
 3. 上記の環境変数を**Production**（必要に応じてPreview/Developmentにも）追加
 4. 変更後、再デプロイ
+5. 環境変数を手動で変更した後も再デプロイ（※ビルド時に環境変数を読み込むため）
 
 > ※セキュリティ上、これらの値はGitHubリポジトリには含めないでください。
 
