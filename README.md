@@ -98,16 +98,26 @@ npx prisma studio
 npx prisma migrate dev --name <migration-name>
 ```
 
-### 環境変数
+---
 
-`.env.local`ファイルにSupabase(PostgreSQL)の接続情報を記載してください。
+## Vercelデプロイ時の環境変数設定
 
-例：
-```
-DATABASE_URL="postgresql://postgres:postgres@localhost:54322/postgres"
-```
+Vercelにデプロイする際は、**以下の環境変数をVercelの管理画面で手動設定してください**。
 
-（ポート番号やユーザー名・DB名はsupabase-cliの設定に合わせてください）
+- `DATABASE_URL` : Supabase（本番用）の接続情報
+- `WEBAUTHN_RP_ID` : Vercelドメイン（例: your-app.vercel.app）
+- `WEBAUTHN_ORIGIN` : Vercel URL（例: https://your-app.vercel.app）
+
+### 設定手順
+
+1. [Vercelのダッシュボード](https://vercel.com/)で該当プロジェクトを開く
+2. 「Settings」→「Environment Variables」を選択
+3. 上記の環境変数を**Production**（必要に応じてPreview/Developmentにも）追加
+4. 変更後、再デプロイ
+
+> ※セキュリティ上、これらの値はGitHubリポジトリには含めないでください。
+
+---
 
 ## 注意事項
 
