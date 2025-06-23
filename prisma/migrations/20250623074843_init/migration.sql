@@ -1,14 +1,16 @@
 -- CreateTable
 CREATE TABLE "challenges" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
     "challenge" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "challenges_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "authenticators" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
     "credentialId" TEXT NOT NULL,
     "publicKey" TEXT NOT NULL,
@@ -16,8 +18,10 @@ CREATE TABLE "authenticators" (
     "transports" TEXT NOT NULL,
     "deviceType" TEXT NOT NULL,
     "deviceName" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "lastUsedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lastUsedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "authenticators_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

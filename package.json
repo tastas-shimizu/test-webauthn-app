@@ -8,7 +8,11 @@
     "dev": "concurrently \"npm run next-dev\" \"npm run ssl-proxy\"",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
+    "prisma:migrate:supabase": "dotenv -e .env.supabase -- prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
@@ -25,10 +29,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.1.2",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "local-ssl-proxy": "^2.0.5",
     "prisma": "^6.8.2",
+    "supabase": "^2.26.9",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
