@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getChallenge, deleteChallenge, getAuthenticator, updateAuthenticatorLastUsed } from '@/lib/db';
 
-const rpID = 'localhost';
+const rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
+const origin = process.env.WEBAUTHN_ORIGIN || 'https://localhost:3001';
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
         const verification = await verifyAuthenticationResponse({
             response: body,
             expectedChallenge,
-            expectedOrigin: 'https://localhost:3001',
+            expectedOrigin: origin,
             expectedRPID: rpID,
             credential: {
                 id: authenticator.credentialId,

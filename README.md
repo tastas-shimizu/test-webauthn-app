@@ -40,16 +40,9 @@ npx prisma migrate dev
 ```
 
 5. SSL証明書作成：
-    #### macOS
-    ```bash
-    brew install mkcert
-    mkcert -install
-    mkcert localhost
-    ```
-   #### WSL
-    ```bash
-    openssl req -x509 -newkey rsa:2048 -nodes -keyout localhost-key.pem -out localhost.pem -days 365 -subj "/CN=localhost"
-    ```
+```bash
+openssl req -x509 -newkey rsa:2048 -nodes -keyout localhost-key.pem -out localhost.pem -days 365 -subj "/CN=localhost"
+```
 
 6. 開発サーバーの起動：
 ```bash

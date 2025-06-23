@@ -14,6 +14,8 @@ export async function POST(req: NextRequest) {
         );
     }
 
+    const rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
+
     // 認証器の選択基準の定義
     const authenticatorSelection: AuthenticatorSelectionCriteria = {
         // "platform"を指定すると、プラットフォーム（例えばスマートフォンやPC）に内蔵されている認証器を使用する
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const options = await generateRegistrationOptions({
         rpName: 'My WebAuthn App',
-        rpID: 'localhost',
+        rpID: rpID,
         userID,
         userName: username,
         timeout: 60000,

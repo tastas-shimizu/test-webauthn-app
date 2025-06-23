@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getAuthenticator, saveChallenge } from '@/lib/db';
 
-const rpID = 'localhost';
+const rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
 
 export async function POST(req: NextRequest) {
     const { username } = await req.json();
