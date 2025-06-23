@@ -11,7 +11,8 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
-    "prisma:migrate:supabase": "dotenv -e .env.supabase -- prisma migrate deploy"
+    "prisma:migrate:supabase": "dotenv -e .env.supabase -- prisma migrate deploy",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
